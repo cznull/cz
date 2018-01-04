@@ -1,3 +1,6 @@
+#include <iostream>
+#include <atlimage.h>
+
 int main() {
 	CImage im;
 	unsigned char *imb;
