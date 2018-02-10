@@ -42,7 +42,6 @@ unsigned char getb(double x);
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int, HWND*);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-//INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 __global__ void Kernelevo1(float *a, float *b, float *c, float *d, float *m)
 {
@@ -79,16 +78,8 @@ unsigned char getb(double x) {
 }
 
 void draw(HDC hdc, HWND hWnd, unsigned int f) {
-	/*himg = CreateBitmapIndirect(&img);
-	preimg = SelectObject(hdcc, himg);
-	BitBlt(hdc, 0, 0, arraySize, arraySize, hdcc, 0, 0, SRCCOPY);
-	SelectObject(hdcc, preimg);
-	DeleteObject(himg);*/
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, arraySize, arraySize, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glClear(GL_COLOR_BUFFER_BIT); 
-	//glBindTexture(GL_TEXTURE_2D, texbuffer);
-	//glCopyPixels(0, 0, arraySize, arraySize, GL_COLOR);
-	//glDrawPixels(arraySize, arraySize, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
 	glBegin(GL_QUADS);
 	glColor3f(1.0f, 1.0f, 1.0f);
 	glTexCoord2f(0.0f, 0.0f);
@@ -139,14 +130,8 @@ cudaError_t cui(HWND hWnd) {
 		goto Error;
 	}
 
-	/*cudaStatus = cudaMalloc(&device_img, arraySize*arraySize * sizeof(int));
-	if (cudaStatus != cudaSuccess) {
-		MessageBoxA(hWnd, "mallloc failed", "message", MB_OK);
-		goto Error;
-	}*/
 	cudaGraphicsMapResources(1, &cuda_pbo_resource, 0);
 	cudaStatus = cudaGraphicsResourceGetMappedPointer((void **)&device_img, &num_bytes, cuda_pbo_resource);
-	//cudaStatus = cudaGraphicsSubResourceGetMappedArray(&device_array, cuda_pbo_resource,0,0); 
 	cudaGraphicsUnmapResources(1, &cuda_pbo_resource, 0);
 	if (cudaStatus != cudaSuccess) {
 		MessageBoxA(hWnd, "res failed", "message", MB_OK);
@@ -262,8 +247,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 				Kernelevo1 << <gridsize, blocksize >> > (device_a, device_b, device_c, device_d, device_m);
 				Kernelevo1 << <gridsize, blocksize >> > (device_c, device_d, device_a, device_b, device_m);
 			}
-			//cudaStatus = cudaGraphicsMapResources(1, &cuda_pbo_resource, 0); 
-			/*if (cudaStatus != cudaSuccess) {
+			/*cudaStatus = cudaGraphicsMapResources(1, &cuda_pbo_resource, 0); 
+			if (cudaStatus != cudaSuccess) {
 				MessageBoxA(hWnd, "evo failed", "message", MB_OK);
 				break;
 			}*/
@@ -315,7 +300,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow, HWND* hWnd)
 {
-	hInst = hInstance; // 将实例句柄存储在全局变量中
+	hInst = hInstance;
 
 	*hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW, 0, 0, 1060, 1040, nullptr, nullptr, hInstance, nullptr);
 
@@ -405,8 +390,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			PostQuitMessage(1);
 		}
 		
-		cudaStatus = cudaGraphicsGLRegisterBuffer(&cuda_pbo_resource, texbuffer, cudaGraphicsMapFlagsWriteDiscard);
-		//cudaStatus = cudaGraphicsGLRegisterImage(&cuda_pbo_resource, texbuffer, GL_TEXTURE_2D, cudaGraphicsMapFlagsWriteDiscard);
+		cudaStatus = cudaGraphicsGLRegisterBuffer(&cuda_pbo_resource, pbo, cudaGraphicsMapFlagsWriteDiscard);
 		if (cudaStatus != cudaSuccess) {
 			MessageBoxA(hWnd, "pbo failed", "message", MB_OK);
 			PostQuitMessage(1);
@@ -458,4 +442,4 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	return 0;
 }
-//glew32.lib;glu32.lib;opengl32.lib;
+//glew32.lib;opengl32.lib;
